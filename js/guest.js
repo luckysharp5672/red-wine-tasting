@@ -11,6 +11,20 @@ window.Guest = (function () {
   if (!pid) { pid = 'p' + Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4); LS.set('g.pid', pid); }
   let view = null, tab = LS.get('g.tab', 'now'), polling = false, nowSig = '', docBuilt = false, editing = null, sending = false;
   const draft = { diag: [null, null, null], rediag: false, submit: null };
+  let pendingEditing = null;
+
+  // 送る前の入力（診断の選択・投稿の選択・記録の入力途中）を端末に残す。画面を閉じても戻ってこられる
+  function saveDraft() {
+    LS.set('g.draft', { pid, diag: draft.diag, rediag: draft.rediag, submit: draft.submit, editing });
+  }
+  (function restoreDraft() {
+    const s = LS.get('g.draft', null);
+    if (!s || s.pid !== pid) return;
+    if (Array.isArray(s.diag) && s.diag.length === 3) draft.diag = s.diag;
+    draft.rediag = !!s.rediag;
+    if (s.submit && Array.isArray(s.submit.guesses)) draft.submit = s.submit;
+    if (s.editing && s.editing.wine >= 1 && s.editing.wine <= 9) pendingEditing = s.editing;
+  })();
 
   function start(app) {
     document.body.classList.add('guest');
@@ -45,8 +59,9 @@ window.Guest = (function () {
 
   // ---------- 画面の更新 ----------
   function update(force) {
-    if (!view.my) { renderJoin(); return; }
+    if (!view.my) { if (!$('#claimcard')) renderJoin(); return; }
     $('#nav').hidden = false;
+    if (pendingEditing) { editing = pendingEditing; pendingEditing = null; renderEditor(); }
     $('#me').textContent = view.my.name + ' さん' + (view.my.diag ? '・' + D.types[view.my.diag.type].label : '');
     badge();
     if (tab === 'now') renderNow(force);
@@ -79,8 +94,16 @@ window.Guest = (function () {
       <h3 style="font-size:24px;margin:10px 0">${UI.esc(C.EVENT.title)}</h3><p class="lead">${UI.esc(C.EVENT.sub)}</p></div>
       <div class="gcard"><h3>ニックネームを登録</h3><p class="lead">画面に映ります。社内で通じる呼び名でどうぞ。</p>
       <div class="field"><input class="txt" id="joinname" maxlength="16" placeholder="例：よしい" value="${UI.esc(LS.get('g.name', ''))}" autocomplete="nickname"></div>
-      <button class="btn primary block" data-x="join">参加する</button></div>
+      <button class="btn primary block" data-x="join">参加する</button>
+      <p class="lead" style="margin:10px 0 0">途中で閉じてしまった方も、<b>前と同じ名前</b>を入れると続きから使えます。</p></div>
       ${Api.MOCK ? '<p class="muted" style="font-size:12px">模擬モード（このブラウザの中だけで動いています）</p>' : ''}`;
+  }
+
+  function claimCard(nm) {
+    $('#main').innerHTML = `<div class="gcard hot" id="claimcard"><h3>「${UI.esc(nm)}」さんは登録ずみです</h3>
+      <p class="lead">前に参加した<b>ご本人</b>なら、続きから再開できます（それまでの診断・記録・回答がそのまま戻ります）。</p>
+      <div style="display:grid;gap:8px"><button class="btn primary block" data-x="claim" data-name="${UI.esc(nm)}">はい、私です（続きから）</button>
+      <button class="btn block" data-x="rename">別の人です（名前を変える）</button></div></div>`;
   }
 
   // ---------- いま ----------
@@ -209,9 +232,9 @@ window.Guest = (function () {
   function openEditor(no) {
     const rec = view.my.recs[no];
     editing = { wine: no, like: rec ? rec.like : 0, body: rec ? rec.body : 0, tannin: rec ? rec.tannin : 0, fruit: rec ? rec.fruit : '', memo: rec ? rec.memo : '', match: rec ? rec.match : '' };
-    renderEditor(); window.scrollTo(0, 0);
+    saveDraft(); renderEditor(); window.scrollTo(0, 0);
   }
-  function closeEditor() { editing = null; $('#sheet').innerHTML = ''; document.body.style.overflow = ''; update(true); }
+  function closeEditor() { editing = null; saveDraft(); $('#sheet').innerHTML = ''; document.body.style.overflow = ''; update(true); }
   function seg(field, n, labels) {
     return `<div class="seg">${Array.from({ length: n }, (_, i) => { const val = typeof labels[i] === 'object' ? labels[i][0] : i + 1; const lab = typeof labels[i] === 'object' ? labels[i][1] : (labels[i] || i + 1); return `<button class="${editing[field] === val ? 'sel' : ''}" data-x="set" data-f="${field}" data-v="${val}">${lab}</button>`; }).join('')}</div>`;
   }
@@ -275,20 +298,35 @@ window.Guest = (function () {
       const nm = $('#joinname').value.trim();
       if (!nm) { UI.toast('ニックネームを入れてください', true); return; }
       LS.set('g.name', nm); b.disabled = true;
-      const r = await call({ action: 'join', name: nm });
+      const r = await Api.call({ action: 'join', pid, name: nm });
       b.disabled = false;
-      if (r.ok) setTab('now');
+      if (r.ok) { view = r; setTab('now'); }
+      else if (r.exists) claimCard(nm);
+      else UI.toast(r.error || '送れませんでした', true);
       return;
     }
+    if (x === 'claim') {
+      b.disabled = true;
+      const r = await Api.call({ action: 'claim', pid, name: b.dataset.name });
+      if (!r.ok) { b.disabled = false; UI.toast(r.error || '見つかりませんでした', true); return; }
+      pid = r.pid; LS.set('g.pid', pid); LS.set('g.name', b.dataset.name);
+      const s = LS.get('g.draft', null);
+      if (s && s.pid !== pid) LS.set('g.draft', null); // 別人の下書きは持ち越さない
+      draft.diag = [null, null, null]; draft.rediag = false; draft.submit = null;
+      view = null; await poll(true);
+      if (view && view.my) { UI.toast('続きから再開しました'); setTab('now'); }
+      return;
+    }
+    if (x === 'rename') { LS.set('g.name', ''); $('#main').innerHTML = ''; renderJoin(); return; }
     if (x === 'tab') { setTab(b.dataset.t); return; }
     if (x === 'docgo') { e.preventDefault(); setTab('doc', b.dataset.id); return; }
-    if (x === 'diagpick') { draft.diag[Number(b.dataset.q)] = Number(b.dataset.c); renderNow(true); return; }
-    if (x === 'rediag') { draft.rediag = true; draft.diag = view.my.diag.answers.slice(); renderNow(true); return; }
-    if (x === 'rediagcancel') { draft.rediag = false; renderNow(true); return; }
+    if (x === 'diagpick') { draft.diag[Number(b.dataset.q)] = Number(b.dataset.c); saveDraft(); renderNow(true); return; }
+    if (x === 'rediag') { draft.rediag = true; draft.diag = view.my.diag.answers.slice(); saveDraft(); renderNow(true); return; }
+    if (x === 'rediagcancel') { draft.rediag = false; saveDraft(); renderNow(true); return; }
     if (x === 'diag') {
       b.disabled = true;
       const r = await call({ action: 'diag', answers: draft.diag });
-      if (r.ok) { draft.rediag = false; renderNow(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }
+      if (r.ok) { draft.rediag = false; saveDraft(); renderNow(true); window.scrollTo({ top: 0, behavior: 'smooth' }); }
       return;
     }
     if (x === 'quiz') {
@@ -313,7 +351,7 @@ window.Guest = (function () {
     if (x === 'set') {
       const f = b.dataset.f, val = ['like', 'body', 'tannin'].includes(f) ? Number(b.dataset.v) : b.dataset.v;
       editing[f] = editing[f] === val && f !== 'like' ? (f === 'fruit' || f === 'match' ? '' : 0) : val;
-      renderEditor(); return;
+      saveDraft(); renderEditor(); return;
     }
     if (x === 'save') {
       editing.memo = $('#memo').value;
@@ -328,7 +366,10 @@ window.Guest = (function () {
     if (!f || !draft.submit) return;
     const v = Number(e.target.value);
     if (f === 'vote') draft.submit.vote = v; else if (/^g\d$/.test(f)) draft.submit.guesses[Number(f[1])] = v;
+    saveDraft();
   }
+  // ひと言メモは打つたびに残す
+  document.addEventListener('input', (e) => { if (editing && e.target.id === 'memo') { editing.memo = e.target.value; saveDraft(); } });
 
   return { start };
 })();
