@@ -28,7 +28,7 @@ window.Guest = (function () {
 
   function start(app) {
     document.body.classList.add('guest');
-    app.innerHTML = `<header class="g-top"><span class="ttl">RED WINE NIGHT</span><span class="me" id="me"></span></header>
+    app.innerHTML = `<header class="g-top"><span class="ttl">RED WINE NIGHT</span><span class="gg" id="gg"></span><span class="me" id="me"></span></header>
       <main class="g-main" id="main"><p class="muted">読み込み中…</p></main>
       <nav class="g-nav" id="nav" hidden>${[['now', '◉', 'いま'], ['rec', '🍷', '記録'], ['doc', '📖', '資料']].map(([k, ic, t]) => `<button data-tab="${k}"><span class="ic">${ic}</span>${t}<span class="badge" hidden></span></button>`).join('')}</nav>
       <div id="sheet"></div>`;
@@ -64,6 +64,7 @@ window.Guest = (function () {
     if (pendingEditing) { editing = pendingEditing; pendingEditing = null; renderEditor(); }
     $('#me').textContent = view.my.name + ' さん' + (view.my.diag ? '・' + D.types[view.my.diag.type].label : '');
     badge();
+    setHeadGlass(Object.keys(view.my.recs).length / 9);
     if (tab === 'now') renderNow(force);
     else if (tab === 'rec') renderRec();
     else renderDoc();
@@ -77,6 +78,15 @@ window.Guest = (function () {
     update(true);
     if (anchor) { const el = document.getElementById(anchor); if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' }); }
     else window.scrollTo(0, 0);
+  }
+
+  // ヘッダーのグラス：試飲の記録（9本）が増えるほど液面が上がる。値だけ変えて、グラスは作り直さない
+  function setHeadGlass(f) {
+    const host = $('#gg'); if (!host) return;
+    if (!host.firstElementChild) host.innerHTML = UI.glass(0, 'sm', 'gc-head', false);
+    const svg = host.querySelector('.wglass');
+    if (svg) svg.style.setProperty('--fill', Math.max(0, Math.min(1, f)));
+    host.title = `試飲の記録 ${Math.round(f * 9)} / 9`;
   }
 
   function badge() {

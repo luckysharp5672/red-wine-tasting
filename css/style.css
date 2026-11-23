@@ -358,6 +358,29 @@ textarea.txt { min-height: 70px; resize: vertical; }
   .reader .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .reader .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
+/* ---------- ワイングラス：液面が静かに揺れ、注がれる筋が出る（reduce のときは全部止まる） ---------- */
+.wglass-wrap { position: relative; width: 150px; margin: 0 auto; }
+.wglass-wrap.big { width: 230px; }
+.wglass-wrap.mid { width: 150px; }
+.wglass-wrap.sm { width: 26px; }
+.wglass { display: block; width: 100%; height: auto; overflow: visible; }
+.wglass .gbody { fill: rgba(255,255,255,.03); stroke: #8F7E82; stroke-opacity: .7; stroke-width: 2; }
+.wglass .gstem { fill: none; stroke: #8F7E82; stroke-opacity: .7; stroke-width: 2; stroke-linecap: round; }
+.wglass .gshine { fill: none; stroke: #fff; stroke-opacity: .16; stroke-width: 3; stroke-linecap: round; }
+.wglass .liquid { transform: translateY(calc((1 - var(--fill, 0)) * 54px)); transition: transform 1.4s cubic-bezier(.3,.7,.2,1); }
+.wglass .liquid rect { fill: #7B1E2B; }
+.wglass .wave { fill: #B22234; animation: wave 3.2s linear infinite; }
+@keyframes wave { from { transform: translateX(0); } to { transform: translateX(-60px); } }
+.wglass-wrap .stream { position: absolute; left: 50%; width: 4px; margin-left: -2px; top: -18%; bottom: 81.8%; border-radius: 2px; background: linear-gradient(#B22234, #7B1E2B); transform-origin: 50% 0; animation: pour 2.2s ease-out .2s both, flow 1.8s ease-in-out 2.4s infinite alternate; }
+@keyframes pour { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes flow { from { opacity: .7; } to { opacity: 1; } }
+.hero-glass { position: absolute; right: 110px; top: 56%; width: 150px; }
+.hero-glass .liquid { animation: fillTo 2.6s .3s cubic-bezier(.3,.7,.2,1) both; }
+@keyframes fillTo { from { transform: translateY(54px); } to { transform: translateY(calc((1 - var(--fill)) * 54px)); } }
+.ending .wglass-wrap { margin: 0 auto 18px; }
+.g-top .gg { display: inline-block; flex: none; }
+.g-top .gg .wglass-wrap { width: 18px; }
+
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: .01ms !important; transition-duration: .01ms !important; }
 }

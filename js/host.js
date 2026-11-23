@@ -78,6 +78,11 @@ window.Host = (function () {
   function render() {
     stage.innerHTML = UI.slide(cur(), 'host', idx, S.length);
     stage.firstElementChild.classList.add('enter');
+    // 途中で参加者が閉じても入り直せるよう、どのスライドでも右上に参加用QRを出す
+    const corner = document.createElement('div');
+    corner.className = 'corner-qr';
+    corner.innerHTML = `${UI.qr(UI.publicUrl())}<span>スマホで参加<br><small>QRを読んで<br>名前を入れる</small></span>`;
+    stage.appendChild(corner);
     $('#notes').innerHTML = `<b>${UI.esc(cur().title)}</b><br>${UI.esc(cur().note || '（ノートなし）')}`;
     live(); bar();
   }

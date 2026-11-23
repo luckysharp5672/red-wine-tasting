@@ -12,6 +12,20 @@ window.UI = (function () {
   const stars = (x) => { const r = Math.round(x || 0); return '★'.repeat(r) + '☆'.repeat(5 - r); };
   const wineLabel = (w) => `${w.maker} ${w.name}`;
 
+  // ワイングラス。fill は液面の高さ（0〜1）。液面は CSS の --fill で動き、波が静かに揺れる。
+  // pour を true にすると、液面に注がれる筋が出る。id は画面内で一意にする。
+  function glass(fill, size, id, pour) {
+    const f = Math.max(0, Math.min(1, Number(fill) || 0));
+    const body = 'M10 20 H50 C50 52 42 74 30 74 C18 74 10 52 10 20 Z';
+    return `<div class="wglass-wrap ${size || ''}">${pour ? '<span class="stream"></span>' : ''}<svg class="wglass" viewBox="0 0 60 110" style="--fill:${f}" aria-hidden="true">
+      <defs><clipPath id="${id}"><path d="${body}"/></clipPath></defs>
+      <g clip-path="url(#${id})"><g class="liquid"><path class="wave" d="M-60 20 Q-52.5 15 -45 20 T-30 20 T-15 20 T0 20 T15 20 T30 20 T45 20 T60 20 T75 20 T90 20 V84 H-60 Z"/><rect x="0" y="20" width="60" height="64"/></g></g>
+      <path class="gbody" d="${body}"/>
+      <path class="gshine" d="M18 30 C18 44 20 56 24 64"/>
+      <path class="gstem" d="M30 74 V98 M18 100 H42"/>
+    </svg></div>`;
+  }
+
   function setHTML(el, html) {
     if (!el) return false;
     if (el._html === html) return false;
@@ -86,7 +100,7 @@ window.UI = (function () {
   const R = {
     cover() {
       const E = C.EVENT;
-      return { cls: 'cover', html: `<div class="en1">${E.en}</div><h1>${esc(E.title)}</h1><div class="rule"></div><div class="sub">${esc(E.sub)}</div><div class="series">${esc(E.series)}</div>` };
+      return { cls: 'cover', html: `<div class="en1">${E.en}</div><h1>${esc(E.title)}</h1><div class="rule"></div><div class="sub">${esc(E.sub)}</div><div class="series">${esc(E.series)}</div><div class="hero-glass">${glass(0.72, 'mid', 'gc-cover', true)}</div>` };
     },
     join() {
       const u = publicUrl();
@@ -220,7 +234,7 @@ window.UI = (function () {
       return { html: `<div class="awards"><div class="card"><h3>人気投票 ― 今日の運命の1本</h3><div data-live="vote"></div></div><div class="card"><h3>クイズ王</h3><div data-live="quizrank"></div></div></div>` };
     },
     ending() {
-      return { cls: 'ending', html: `<div class="kicker" style="font-size:22px">THANK YOU ｜ SANTÉ !</div><h1>あなたの“運命の1本”は、<br>見つかりましたか？</h1>
+      return { cls: 'ending', html: `${glass(1, 'mid', 'gc-end', false)}<div class="kicker" style="font-size:22px">THANK YOU ｜ SANTÉ !</div><h1>あなたの“運命の1本”は、<br>見つかりましたか？</h1>
         <div class="line"><div class="muted" style="font-size:.6em">明日から使える、ワインショップでのひと言</div>${esc(C.EVENT.closing)}</div><p class="muted">不人気ワインシリーズ ― 次回もお楽しみに</p>` };
     }
   };
@@ -234,5 +248,5 @@ window.UI = (function () {
     return `<section class="slide k-${s.kind} ${r.cls || ''}" id="s-${s.id}" data-id="${s.id}">${body}${page}</section>`;
   }
 
-  return { esc, wine, gcls, tcls, L, nn, stars, wineLabel, setHTML, toast, publicUrl, qr, radar, routeChain, slide };
+  return { esc, wine, gcls, tcls, L, nn, stars, wineLabel, setHTML, toast, publicUrl, qr, radar, routeChain, slide, glass };
 })();
