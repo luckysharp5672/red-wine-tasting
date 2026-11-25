@@ -101,8 +101,8 @@ window.Host = (function () {
       if (!view.counts.submit) return { label: '投稿の受付を始める', patch: { submitOpen: true }, needKey: true };
     }
     if (s.kind === 'reveal') {
-      if (st.blindReveal < 9) return { label: `グラス ${st.blindReveal + 1} を開ける`, patch: { blindReveal: st.blindReveal + 1 }, needKey: true };
-      if (!st.blindWinner) return { label: '最多正解者を発表', patch: { blindWinner: true } };
+      if (st.blindReveal < 18) return { label: `グラス ${st.blindReveal + 1} を開ける`, patch: { blindReveal: st.blindReveal + 1 }, needKey: true };
+      if (!st.blindWinner) return { label: '最高得点者を発表', patch: { blindWinner: true } };
     }
     if (s.kind === 'awards') {
       if (!st.voteReveal) return { label: '人気投票を発表', patch: { voteReveal: true } };
@@ -247,7 +247,7 @@ window.Host = (function () {
       const card = root.querySelector(`.rcard[data-g="${g.glass}"]`);
       if (!card) return;
       const w = UI.wine(g.wine);
-      const back = `<div class="gn">グラス ${g.glass}</div><span class="no">${UI.nn(w.no)}</span><div class="nm">${UI.esc(w.maker)}<br><small class="muted">${UI.esc(w.name)}</small></div><span class="chip-g ${UI.gcls(w.grape)}"><i class="dot"></i>${C.COUNTRIES[w.country]}</span><div class="rate">${g.rate}%<small>正解 ${g.ok}人</small></div>`;
+      const back = `<div class="gn">${g.set}-${g.glass}</div><div class="nm">No.${w.no} ${UI.esc(w.short)}</div><div class="ans">${C.COUNTRIES[g.country]}<br>${C.GRAPES[g.grape].short}</div>${g.picker ? `<div class="who">${UI.esc(g.picker)}</div><div class="pts2">国${g.countryOk ? '⭕' : '❌'} 品種${g.grapeOk ? '⭕' : '❌'}<b> +${g.pts}</b></div>` : '<div class="muted">選ばれず</div>'}`;
       UI.setHTML(card.querySelector('.back'), back);
       card.classList.add(UI.gcls(w.grape));
       card.querySelector('.back').classList.add(UI.gcls(w.grape));
@@ -258,9 +258,9 @@ window.Host = (function () {
     if (!v.blind.keySet) { UI.setHTML(el, '<p class="status-closed" style="font-size:22px">銘柄当ての正解が未設定です（管理 K から設定）</p>'); return; }
     if (v.blind.ranking) {
       const r = v.blind.ranking, top = r.filter((x) => x.rank === 1);
-      UI.setHTML(el, top.length ? `<div class="winner"><span class="crown">👑</span><div><div class="kicker" style="font-size:18px">銘柄当て 最多正解</div><div class="who">${top.map((x) => UI.esc(x.name)).join('、')}</div></div><div class="pts">${top[0].score} / 9 問</div></div>
-        <p class="muted" style="text-align:center;margin:8px 0 0;font-size:18px">${r.filter((x) => x.rank > 1).slice(0, 5).map((x) => `${x.rank}位 ${UI.esc(x.name)}（${x.score}問）`).join('　')}</p>` : '<p class="muted">投稿がありません</p>');
-    } else UI.setHTML(el, n ? `<p class="muted" style="font-size:20px">${n < 9 ? '→キーで次のグラス' : '→キーで最多正解者を発表'}</p>` : '<p class="muted" style="font-size:22px">→キーでグラス1から開けます</p>');
+      UI.setHTML(el, top.length ? `<div class="winner"><span class="crown">👑</span><div><div class="kicker" style="font-size:18px">銘柄当て 最高得点</div><div class="who">${top.map((x) => UI.esc(x.name)).join('、')}</div></div><div class="pts">${top[0].score} / 6 点</div></div>
+        <p class="muted" style="text-align:center;margin:8px 0 0;font-size:18px">${r.filter((x) => x.rank > 1).slice(0, 5).map((x) => `${x.rank}位 ${UI.esc(x.name)}（${x.score}点）`).join('　')}</p>` : '<p class="muted">投稿がありません</p>');
+    } else UI.setHTML(el, n ? `<p class="muted" style="font-size:20px">${n < 18 ? '→キーで次のグラス' : '→キーで最高得点者を発表'}</p>` : '<p class="muted" style="font-size:22px">→キーでグラス1から開けます</p>');
   }
 
   function voteHTML(v) {
@@ -273,14 +273,14 @@ window.Host = (function () {
     const r = v.quizRank;
     if (!r.length) return '<p class="muted">回答がありません</p>';
     const total = C.SLIDES.filter((s) => s.kind === 'quiz').length * 3;
-    return `<div class="podium" style="animation:pop .6s both">${r.filter((x) => x.rank <= 3).map((x) => `<div class="${x.rank === 1 ? 'p1' : ''}" style="font-size:${x.rank === 1 ? 40 : 22}px">${x.rank === 1 ? '👑 ' : x.rank + '位 '}<b>${UI.esc(x.name)}</b> <span class="muted" style="font-size:.6em">${x.score} / ${total}問</span></div>`).join('')}</div>`;
+    return `<div class="podium" style="animation:pop .6s both">${r.filter((x) => x.rank <= 3).map((x) => `<div class="${x.rank === 1 ? 'p1' : ''}" style="font-size:${x.rank === 1 ? 40 : 22}px">${x.rank === 1 ? '👑 ' : x.rank + '位 '}<b>${UI.esc(x.name)}</b> <span class="muted" style="font-size:.6em">${x.score} / ${total}点</span></div>`).join('')}</div>`;
   }
 
   // ---------- 管理パネル ----------
   async function panel() {
     const p = $('#panel');
     p.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h3>管理パネル</h3><button data-x="close">閉じる</button></div>
-      <h4>銘柄当ての正解（グラス → ボトル）</h4><div id="keyrows">読み込み中…</div>
+      <h4>銘柄当ての正解（18グラス → ボトルNo.。各ワインを2本ずつ）</h4><div id="keyrows">読み込み中…</div>
       <div style="display:flex;gap:6px;margin:8px 0 14px"><button data-x="savekey">保存</button><button data-x="randkey">ランダムに決める</button></div>
       <h4>投稿の締切表示</h4><div style="display:flex;gap:6px;margin-bottom:14px"><input id="deadline" placeholder="例 20:45" value="${UI.esc(view ? view.state.deadline : '')}"><button data-x="deadline">反映</button></div>
       <h4>手動の操作</h4><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
@@ -296,7 +296,7 @@ window.Host = (function () {
   }
   function keyRows(k) {
     const opts = (sel) => '<option value="">―</option>' + C.WINES.map((w) => `<option value="${w.no}" ${sel === w.no ? 'selected' : ''}>${UI.nn(w.no)} ${UI.esc(w.short)}</option>`).join('');
-    $('#keyrows').innerHTML = [0, 1, 2, 3, 4, 5, 6, 7, 8].map((i) => `<div class="keyrow"><span>グラス ${i + 1}</span><select data-g="${i}">${opts(k ? k[i] : null)}</select></div>`).join('')
+    $('#keyrows').innerHTML = Array.from({ length: 18 }, (_, i) => `<div class="keyrow"><span>${i < 9 ? 'A' : 'B'}-${(i % 9) + 1}（${i + 1}番）</span><select data-g="${i}">${opts(k ? k[i] : null)}</select></div>`).join('')
       + `<p class="muted" style="margin:4px 0 0">${k ? '設定済み。この表のとおりに注いでください' : '未設定'}</p>`;
   }
   function panelLive() {

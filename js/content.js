@@ -176,9 +176,9 @@ window.CONTENT = (function () {
     { id: 'together', kind: 'together', title: 'みんなの記録まとめ', step: '04', note: '9本の平均を並べて振り返る。→キーで「好みが近い人」を発表。診断どおりだった人の割合も出ます。' },
     { id: 'quiz3', kind: 'quiz', quiz: 3, title: 'QUIZ 3 産地と造り手', note: '→キーで出題、もう一度→で正解発表。ブラインドの前の頭の体操。' },
     { id: 'blind', kind: 'blind', title: 'BLIND CHALLENGE', step: '05', note: 'ここからがメインイベント。照明を少し落として、ゲーム番組のテンションで。' },
-    { id: 'blindrules', kind: 'blindrules', title: '銘柄当てのルール', step: '05', reader: true, note: '27個のグラスを3セットに分けて置く。同じ番号は同じワイン。記録タブを見返しながら予想してOK。' },
+    { id: 'blindrules', kind: 'blindrules', title: '銘柄当てのルール', step: '05', reader: true, note: '18本のグラスを SET A（1〜9）と SET B（10〜18）に分けて置く。同じワインが2本ずつ。記録タブを見返しながら、産地の国と品種を予想してOK。' },
     { id: 'submit', kind: 'submit', title: '投稿タイム', step: '05', note: '→キーで投稿受付を開始、もう一度→で締め切り。締め切るまでは何度でも出し直せます。' },
-    { id: 'reveal', kind: 'reveal', title: '正解発表', step: '06', note: '→キーを押すたびにグラスを1つずつ開ける。正解率も出ます。9つ開けたら、もう一度→で最多正解者。' },
+    { id: 'reveal', kind: 'reveal', title: '正解発表', step: '06', note: '→キーを押すたびにグラスを1本ずつ開ける。誰がそのグラスを選び、何点取ったかが出ます。18本開けたら、もう一度→で最高得点者。' },
     { id: 'awards', kind: 'awards', title: '表彰', step: '06', note: '→キーで、人気投票（下位から）→ クイズ王の順に発表。' },
     { id: 'ending', kind: 'ending', title: 'エンディング', reader: true, note: 'ご参加ありがとうございました。乾杯！ スマホの資料と自分の記録は、このあとも見返せます。' }
   ];

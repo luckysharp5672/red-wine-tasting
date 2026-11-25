@@ -211,12 +211,12 @@ window.UI = (function () {
       return { html: `<div class="together-cols"><div class="card" data-live="sumtable" style="overflow:hidden"></div><div data-live="match" style="display:flex;flex-direction:column;gap:14px"></div></div>` };
     },
     blind() {
-      return { html: `<div class="blind-hero"><div><div class="kicker" style="font-size:24px">MAIN EVENT</div><h1>BLIND CHALLENGE</h1><p>27個のグラスで挑む、銘柄当て</p><p class="muted">ラベルは隠した。頼れるのは、さっきの記録とあなたの舌だけ。</p><div class="qs"><span>?</span><span>?</span><span>?</span></div></div></div>` };
+      return { html: `<div class="blind-hero"><div><div class="kicker" style="font-size:24px">MAIN EVENT</div><h1>BLIND CHALLENGE</h1><p>18本のグラスで挑む、銘柄当て</p><p class="muted">ラベルは隠した。頼れるのは、さっきの記録とあなたの舌だけ。</p><div class="qs"><span>?</span><span>?</span><span>?</span></div></div></div>` };
     },
     blindrules() {
-      return { html: `<div class="card">${['A', 'B', 'C'].map((x) => `<div class="setrow"><b>SET ${x}</b><div class="glassgrid">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<div class="glass">${n}</div>`).join('')}</div></div>`).join('')}
-        <p style="margin:6px 0 0">3セット × 9グラス ＝ 27グラス。<b>同じ番号には、どのセットも同じワイン</b>。<span class="muted">グラス番号①〜⑨はボトルNo.とは無関係です</span></p></div>
-        <div class="cols cols-4">${['空いているセットで①〜⑨を試飲', '各グラスが9銘柄のどれかを予想', '人気投票と一緒にスマホから投稿', '全9問、正解数で勝負！'].map((t, i) => `<div class="card"><div class="no" style="font-size:1.5em">${i + 1}</div>${t}</div>`).join('')}</div>` };
+      return { html: `<div class="card">${[['A', 1], ['B', 10]].map(([x, s]) => `<div class="setrow"><b>SET ${x}</b><div class="glassgrid">${Array.from({ length: 9 }, (_, i) => `<div class="glass">${s + i}</div>`).join('')}</div></div>`).join('')}
+        <p style="margin:6px 0 0">2セット × 9本 ＝ <b>18グラス</b>。<b>各ワインはちょうど2本ずつ</b>。<span class="muted">1人1グラス（先着）。グラス番号はボトルNo.とは無関係です</span></p></div>
+        <div class="cols cols-4">${['好きなグラスを1つ選んで飲む（先着・1人1グラス）', '産地の国を選ぶ（3択）→ 正解で3点', 'ぶどう品種を選ぶ（3択）→ 正解で3点', '合計6点。最高得点者を発表！'].map((t, i) => `<div class="card"><div class="no" style="font-size:1.5em">${i + 1}</div>${t}</div>`).join('')}</div>` };
     },
     submit() {
       const u = publicUrl();
@@ -224,10 +224,10 @@ window.UI = (function () {
         <div style="font-size:30px" data-live="submitstatus"></div>
         <div class="bignum" data-live="submitcount">0<small>人が投稿</small></div>
         <div class="card"><b>PART 1　人気投票</b>「今日の運命の1本は？」<br><span class="muted">ブラインドの結果は気にせず、素直に“また飲みたい”1本を</span></div>
-        <div class="card"><b>PART 2　銘柄当て</b> グラス①〜⑨それぞれについて、9銘柄から1つ選択<br><span class="muted">締め切るまでは何度でも出し直せます</span></div></div></div>` };
+        <div class="card"><b>PART 2　銘柄当て</b> グラス（1〜18）を1つ選び、産地の国とぶどう品種を答える<br><span class="muted">1人1グラス（先着）。締め切るまでは出し直せます</span></div></div></div>` };
     },
     reveal() {
-      return { html: `<div class="reveal-grid" data-live="glasses">${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `<div class="rcard" data-g="${n}"><div class="in"><div class="face front"><div class="gn">${n}</div><div class="muted">？？？</div></div><div class="face back"></div></div></div>`).join('')}</div>
+      return { html: `<div class="reveal-grid" data-live="glasses">${Array.from({ length: 18 }, (_, i) => i + 1).map((n) => `<div class="rcard" data-g="${n}"><div class="in"><div class="face front"><div class="gn">${n}</div><div class="muted">？？？</div></div><div class="face back"></div></div></div>`).join('')}</div>
         <div data-live="winner" style="flex:1;display:grid;place-items:center"></div>` };
     },
     awards() {

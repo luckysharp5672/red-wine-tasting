@@ -22,7 +22,7 @@ window.Guest = (function () {
     if (!s || s.pid !== pid) return;
     if (Array.isArray(s.diag) && s.diag.length === 3) draft.diag = s.diag;
     draft.rediag = !!s.rediag;
-    if (s.submit && Array.isArray(s.submit.guesses)) draft.submit = s.submit;
+    if (s.submit && s.submit.glass !== undefined) draft.submit = s.submit;
     if (s.editing && s.editing.wine >= 1 && s.editing.wine <= 9) pendingEditing = s.editing;
   })();
 
@@ -119,7 +119,7 @@ window.Guest = (function () {
   // ---------- いま ----------
   function mySig() {
     const v = view, s = v.state;
-    return JSON.stringify([s, v.my, v.vote, v.quizRank, v.quiz.map((q) => [q.id, q.open, q.revealed]), v.match && v.match.revealed, v.blind.glasses.length, v.blind.ranking && v.blind.ranking.length]);
+    return JSON.stringify([s, v.my, v.vote, v.quizRank, v.quiz.map((q) => [q.id, q.open, q.revealed]), v.match && v.match.revealed, (v.blind.taken || []).join(), v.blind.glasses.length, v.blind.ranking && v.blind.ranking.length]);
   }
   function renderNow(force) {
     const sig = mySig();
@@ -136,7 +136,7 @@ window.Guest = (function () {
     if (!my.diag || draft.rediag) cards.push(diagForm());
 
     // 発表された結果
-    if (v.blind.glasses.length && my.blind) cards.push(blindCard());
+    if (v.blind.glasses.length && my.blindPick) cards.push(blindCard());
     if (v.vote) cards.push(voteCard());
     if (v.quizRank) cards.push(quizRankCard());
     if (st.matchReveal) cards.push(matchCard());
@@ -170,14 +170,26 @@ window.Guest = (function () {
 
   function submitCard() {
     const my = view.my;
-    if (!draft.submit) draft.submit = my.submit ? { vote: my.submit.vote, guesses: my.submit.guesses.slice() } : { vote: 0, guesses: [0, 0, 0, 0, 0, 0, 0, 0, 0] };
+    if (!draft.submit) draft.submit = my.submit
+      ? { vote: my.submit.vote || 0, glass: my.submit.glass || 0, country: my.submit.country || '', grape: my.submit.grape || '' }
+      : { vote: 0, glass: 0, country: '', grape: '' };
     const d = draft.submit;
-    const opts = (sel) => '<option value="0">― 選ぶ ―</option>' + C.WINES.map((w) => `<option value="${w.no}" ${sel === w.no ? 'selected' : ''}>${UI.nn(w.no)} ${UI.esc(w.short)}（${C.GRAPES[w.grape].short}・${C.COUNTRIES[w.country]}）</option>`).join('');
+    const taken = (view.blind && view.blind.taken) || [];
+    const mineGlass = my.submit ? my.submit.glass : 0;
+    const voteOpts = '<option value="0">― 選ぶ ―</option>' + C.WINES.map((w) => `<option value="${w.no}" ${d.vote === w.no ? 'selected' : ''}>${UI.nn(w.no)} ${UI.esc(w.short)}（${C.GRAPES[w.grape].short}・${C.COUNTRIES[w.country]}）</option>`).join('');
+    const glassOpts = '<option value="0">― グラスを選ぶ ―</option>' + Array.from({ length: 18 }, (_, i) => i + 1).map((n) => {
+      const busy = taken.indexOf(n) >= 0 && n !== mineGlass;
+      return `<option value="${n}" ${d.glass === n ? 'selected' : ''} ${busy ? 'disabled' : ''}>${n}番（${n <= 9 ? 'SET A' : 'SET B'}）${busy ? '・選ばれています' : ''}</option>`;
+    }).join('');
+    const countryOpts = '<option value="">― 選ぶ ―</option>' + Object.keys(C.COUNTRIES).map((k) => `<option value="${k}" ${d.country === k ? 'selected' : ''}>${UI.esc(C.COUNTRIES[k])}</option>`).join('');
+    const grapeOpts = '<option value="">― 選ぶ ―</option>' + Object.keys(C.GRAPES).map((k) => `<option value="${k}" ${d.grape === k ? 'selected' : ''}>${UI.esc(C.GRAPES[k].name)}</option>`).join('');
     return `<div class="gcard ${my.submit ? '' : 'hot'}"><span class="en">Submit</span><h3>投稿タイム ― 人気投票＋銘柄当て</h3>
       <p class="lead">${my.submit ? '✓ 投稿ずみ。締め切りまでは出し直せます。' : 'どちらか片方だけでも投稿できます。'}${view.state.deadline ? ` 締切 ${UI.esc(view.state.deadline)}` : ''}</p>
-      <div class="field"><span class="lb">PART 1　今日の運命の1本は？</span><select class="txt" data-f="vote">${opts(d.vote)}</select></div>
-      <div class="field"><span class="lb">PART 2　銘柄当て：グラス①〜⑨の中身は？</span>
-      ${d.guesses.map((g, i) => `<div style="display:grid;grid-template-columns:3.2em 1fr;gap:8px;align-items:center;margin-bottom:6px"><span class="glass" style="width:2.6em;font-size:16px">${i + 1}</span><select class="txt" data-f="g${i}">${opts(g)}</select></div>`).join('')}</div>
+      <div class="field"><span class="lb">PART 1　今日の運命の1本は？</span><select class="txt" data-f="vote">${voteOpts}</select></div>
+      <div class="field"><span class="lb">PART 2　銘柄当て：グラスを1つ選び、飲んで当てる（1人1グラス・先着）</span>
+        <select class="txt" data-f="glass">${glassOpts}</select>
+        <span class="lb" style="margin-top:6px">産地の国（正解で3点）</span><select class="txt" data-f="country">${countryOpts}</select>
+        <span class="lb" style="margin-top:6px">ぶどう品種（正解で3点）</span><select class="txt" data-f="grape">${grapeOpts}</select></div>
       <button class="btn primary block" data-x="submit">${my.submit ? '出し直す' : '投稿する'}</button></div>`;
   }
 
@@ -214,19 +226,29 @@ window.Guest = (function () {
   }
 
   function blindCard() {
-    const v = view, my = v.my;
-    return `<div class="gcard"><span class="en">Blind Challenge</span><h3>銘柄当て ― 答え合わせ</h3><div style="display:grid;gap:6px">
-      ${v.blind.glasses.map((g, i) => { const w = UI.wine(g.wine), mine = my.submit.guesses[i]; return `<div style="display:grid;grid-template-columns:2.2em 1fr auto;gap:8px;align-items:center"><span class="glass" style="width:2.2em;font-size:14px">${g.glass}</span>
-        <span class="${UI.gcls(w.grape)}"><i class="dot"></i>${UI.esc(w.short)}<br><small class="muted">あなた：${mine ? UI.esc(UI.wine(mine).short) : '未回答'}</small></span><b style="font-size:20px">${my.blind[i] ? '⭕' : '❌'}</b></div>`; }).join('')}</div>
-      ${my.blindScore != null ? `<p style="margin:10px 0 0;font-size:18px">あなたの正解数：<b>${my.blindScore} / 9</b></p>` : ''}</div>`;
+    const v = view, my = v.my, res = my.blindResult, pick = my.blindPick;
+    let body;
+    if (res) {
+      const w = UI.wine(res.wine);
+      body = `<div style="display:grid;gap:8px;font-size:16px">
+        <div>あなたのグラス：<b>${pick.glass}番</b>（${pick.glass <= 9 ? 'SET A' : 'SET B'}）</div>
+        <div>ワイン：<b>No.${res.wine} ${UI.esc(w.short)}</b>（${UI.esc(C.COUNTRIES[res.countryAns])} ・ ${C.GRAPES[res.grapeAns].short}）</div>
+        <div>産地の国：${res.countryOk ? '⭕' : '❌'}　ぶどう品種：${res.grapeOk ? '⭕' : '❌'}　→ <b>${res.pts}点</b></div></div>`;
+    } else if (pick) {
+      body = `<p class="lead" style="margin:0">あなたのグラス（${pick.glass}番）は、まだ開けていません。</p>`;
+    } else {
+      body = '<p class="lead" style="margin:0">グラスを選んでいない場合は、投稿時に選べます。</p>';
+    }
+    return `<div class="gcard"><span class="en">Blind Challenge</span><h3>銘柄当て ― 答え合わせ</h3>${body}
+      ${my.blindScore != null ? `<p style="margin:10px 0 0;font-size:18px">あなたの得点：<b>${my.blindScore} / 6 点</b></p>` : ''}</div>`;
   }
   function voteCard() {
     return `<div class="gcard"><span class="en">Vote</span><h3>人気投票の結果</h3>${view.vote.slice(0, 3).map((x, i) => { const w = UI.wine(x.wine); return `<div class="${UI.gcls(w.grape)}" style="font-size:${i ? 15 : 19}px;margin:4px 0">${i + 1}位 <i class="dot"></i><b>${UI.esc(w.short)}</b> <span class="muted">${x.n}票</span></div>`; }).join('')}</div>`;
   }
   function quizRankCard() {
     const r = view.quizRank, me = r.find((x) => x.name === view.my.name);
-    return `<div class="gcard"><span class="en">Quiz Ranking</span><h3>クイズ王</h3>${r.filter((x) => x.rank === 1).map((x) => `<div style="font-size:19px">👑 <b>${UI.esc(x.name)}</b> <span class="muted">${x.score}問正解</span></div>`).join('')}
-      <p class="lead" style="margin-top:6px">あなた：${view.my.quizScore}問正解${me ? `（${me.rank}位）` : ''}</p></div>`;
+    return `<div class="gcard"><span class="en">Quiz Ranking</span><h3>クイズ王</h3>${r.filter((x) => x.rank === 1).map((x) => `<div style="font-size:19px">👑 <b>${UI.esc(x.name)}</b> <span class="muted">${x.score}点</span></div>`).join('')}
+      <p class="lead" style="margin-top:6px">あなた：${view.my.quizScore}点${me ? `（${me.rank}位）` : ''}</p></div>`;
   }
 
   // ---------- 記録 ----------
@@ -348,11 +370,11 @@ window.Guest = (function () {
     }
     if (x === 'submit') {
       const d = draft.submit;
-      if (!d.vote && !d.guesses.some(Boolean)) { UI.toast('どれか1つは選んでください', true); return; }
-      const blank = d.guesses.filter((g) => !g).length;
+      if (!d.vote && !d.glass) { UI.toast('どちらか1つは選んでください', true); return; }
+      if (d.glass && (!d.country || !d.grape)) { UI.toast('グラスを選んだら、産地の国とぶどう品種も選んでください', true); return; }
       b.disabled = true;
-      const r = await call({ action: 'submit', vote: d.vote, guesses: d.guesses });
-      if (r.ok) UI.toast(blank ? `投稿しました（未回答のグラス ${blank}個）` : '投稿しました！');
+      const r = await call({ action: 'submit', vote: d.vote, glass: d.glass, country: d.country, grape: d.grape });
+      if (r.ok) UI.toast('投稿しました！'); else b.disabled = false;
       renderNow(true);
       return;
     }
@@ -374,8 +396,8 @@ window.Guest = (function () {
   function onChange(e) {
     const f = e.target.dataset && e.target.dataset.f;
     if (!f || !draft.submit) return;
-    const v = Number(e.target.value);
-    if (f === 'vote') draft.submit.vote = v; else if (/^g\d$/.test(f)) draft.submit.guesses[Number(f[1])] = v;
+    if (f === 'vote' || f === 'glass') draft.submit[f] = Number(e.target.value);
+    else if (f === 'country' || f === 'grape') draft.submit[f] = e.target.value;
     saveDraft();
   }
   // ひと言メモは打つたびに残す

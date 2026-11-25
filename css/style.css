@@ -201,12 +201,16 @@ table.sum td.num { font-family: var(--serif); text-align: right; }
 .status-open { color: var(--ok); } .status-closed { color: var(--ng); }
 
 .reveal-grid { display: grid; grid-template-columns: repeat(9, minmax(0, 1fr)); gap: 12px; }
-.rcard { perspective: 900px; height: 360px; }
+.rcard { perspective: 900px; height: 236px; }
 .rcard .in { position: relative; width: 100%; height: 100%; transition: transform .8s cubic-bezier(.3,.7,.2,1); transform-style: preserve-3d; }
 .rcard.open .in { transform: rotateY(180deg); }
 .rcard .face { position: absolute; inset: 0; backface-visibility: hidden; border-radius: 14px; border: 1px solid var(--line); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 10px; text-align: center; }
 .rcard .front { background: var(--surface); }
-.rcard .front .gn { font-family: var(--serif); font-size: 64px; color: var(--wine); }
+.rcard .front .gn { font-family: var(--serif); font-size: 46px; color: var(--wine); }
+.rcard .back .ans { font-size: 14px; color: var(--ink-2); line-height: 1.35; }
+.rcard .back .who { font-family: var(--serif); font-size: 17px; margin-top: 4px; }
+.rcard .back .pts2 { font-size: 13px; color: var(--ink-2); }
+.rcard .back .pts2 b { font-size: 18px; color: var(--accent); }
 .rcard .back { background: var(--surface-2); transform: rotateY(180deg); border-top: 5px solid var(--g); }
 .rcard .back .gn { font-family: var(--serif); font-size: 26px; color: var(--muted); }
 .rcard .back .nm { font-family: var(--serif); font-size: 20px; line-height: 1.3; }
