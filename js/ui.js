@@ -99,6 +99,16 @@ window.UI = (function () {
   }
 
   // ---------- 各スライドの中身 ----------
+  // アンケートの案内（QRと、開くためのリンク）
+  function surveyUrl() { return new URL('survey.html', publicUrl()).href; }
+  function surveyCard() {
+    const u = surveyUrl();
+    return `<div class="survey-card"><div class="kicker" style="font-size:20px">SURVEY</div>
+      <h3>アンケートにご協力ください</h3>
+      <p class="muted" style="margin:0">感想・次にやってみたいこと（匿名・1分ほど）</p>
+      ${qr(u)}<div class="url">${esc(u)}</div></div>`;
+  }
+
   const R = {
     cover() {
       const E = C.EVENT;
@@ -236,8 +246,8 @@ window.UI = (function () {
       return { html: `<div class="awards"><div class="card"><h3>人気投票 ― 今日の運命の1本</h3><div data-live="vote"></div></div><div class="card"><h3>クイズ王</h3><div data-live="quizrank"></div></div></div>` };
     },
     ending() {
-      return { cls: 'ending', html: `${glass(1, 'mid', 'gc-end', false)}<div class="kicker" style="font-size:22px">THANK YOU ｜ SANTÉ !</div><h1>あなたの“運命の1本”は、<br>見つかりましたか？</h1>
-        <div class="line"><div class="muted" style="font-size:.6em">明日から使える、ワインショップでのひと言</div>${esc(C.EVENT.closing)}</div><p class="muted">不人気ワインシリーズ ― 次回もお楽しみに</p>` };
+      return { cls: 'ending', html: `<div class="end-grid"><div class="end-main">${glass(1, 'mid', 'gc-end', false)}<div class="kicker" style="font-size:22px">THANK YOU ｜ SANTÉ !</div><h1>あなたの“運命の1本”は、<br>見つかりましたか？</h1>
+        <div class="line"><div class="muted" style="font-size:.6em">明日から使える、ワインショップでのひと言</div>${esc(C.EVENT.closing)}</div><p class="muted">不人気ワインシリーズ ― 次回もお楽しみに</p></div>${surveyCard()}</div>` };
     }
   };
 

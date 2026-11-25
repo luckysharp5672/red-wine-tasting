@@ -382,6 +382,14 @@ textarea.txt { min-height: 70px; resize: vertical; }
 .hero-glass .liquid { animation: fillTo 2.6s .3s cubic-bezier(.3,.7,.2,1) both; }
 @keyframes fillTo { from { transform: translateY(54px); } to { transform: translateY(calc((1 - var(--fill)) * 54px)); } }
 .ending .wglass-wrap { margin: 0 auto 18px; }
+.end-grid { display: grid; grid-template-columns: 1fr 430px; gap: 60px; align-items: center; width: 100%; }
+.end-main { display: flex; flex-direction: column; align-items: center; text-align: center; }
+.survey-card { background: var(--surface); border: 1px solid var(--accent); border-radius: 16px; padding: 24px; display: grid; gap: 10px; justify-items: center; text-align: center; }
+.survey-card h3 { font-family: var(--serif); font-size: 30px; margin: 0; font-weight: 600; }
+.survey-card .qr { width: 280px; height: 280px; }
+.survey-card .url { font-size: 15px; color: var(--ink-2); word-break: break-all; }
+.reader .end-grid { grid-template-columns: 1fr; gap: 16px; }
+.reader .survey-card .qr { width: 200px; height: 200px; }
 .g-top .gg { display: inline-block; flex: none; }
 .g-top .gg .wglass-wrap { width: 18px; }
 
