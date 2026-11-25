@@ -247,7 +247,7 @@ window.Host = (function () {
       const card = root.querySelector(`.rcard[data-g="${g.glass}"]`);
       if (!card) return;
       const w = UI.wine(g.wine);
-      const back = `<div class="gn">${g.set}-${g.glass}</div><div class="nm">No.${w.no} ${UI.esc(w.short)}</div><div class="ans">${C.COUNTRIES[g.country]}<br>${C.GRAPES[g.grape].short}</div>${g.picker ? `<div class="who">${UI.esc(g.picker)}</div><div class="pts2">国${g.countryOk ? '⭕' : '❌'} 品種${g.grapeOk ? '⭕' : '❌'}<b> +${g.pts}</b></div>` : '<div class="muted">選ばれず</div>'}`;
+      const back = `<div class="gn">${UI.glassName(g.glass)}</div><div class="nm">No.${w.no} ${UI.esc(w.short)}</div><div class="ans">${C.COUNTRIES[g.country]}<br>${C.GRAPES[g.grape].short}</div>${g.picker ? `<div class="who">${UI.esc(g.picker)}</div><div class="pts2">国${g.countryOk ? '⭕' : '❌'} 品種${g.grapeOk ? '⭕' : '❌'}<b> +${g.pts}</b></div>` : '<div class="muted">選ばれず</div>'}`;
       UI.setHTML(card.querySelector('.back'), back);
       card.classList.add(UI.gcls(w.grape));
       card.querySelector('.back').classList.add(UI.gcls(w.grape));
@@ -280,7 +280,7 @@ window.Host = (function () {
   async function panel() {
     const p = $('#panel');
     p.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center"><h3>管理パネル</h3><button data-x="close">閉じる</button></div>
-      <h4>銘柄当ての正解（18グラス → ボトルNo.。各ワインを2本ずつ）</h4><div id="keyrows">読み込み中…</div>
+      <h4>銘柄当ての正解（A-1〜A-9 にボトルNo.を入れる。B は同じ番号のワイン）</h4><div id="keyrows">読み込み中…</div>
       <div style="display:flex;gap:6px;margin:8px 0 14px"><button data-x="savekey">保存</button><button data-x="randkey">ランダムに決める</button></div>
       <h4>投稿の締切表示</h4><div style="display:flex;gap:6px;margin-bottom:14px"><input id="deadline" placeholder="例 20:45" value="${UI.esc(view ? view.state.deadline : '')}"><button data-x="deadline">反映</button></div>
       <h4>手動の操作</h4><div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px">
@@ -296,8 +296,8 @@ window.Host = (function () {
   }
   function keyRows(k) {
     const opts = (sel) => '<option value="">―</option>' + C.WINES.map((w) => `<option value="${w.no}" ${sel === w.no ? 'selected' : ''}>${UI.nn(w.no)} ${UI.esc(w.short)}</option>`).join('');
-    $('#keyrows').innerHTML = Array.from({ length: 18 }, (_, i) => `<div class="keyrow"><span>${i < 9 ? 'A' : 'B'}-${(i % 9) + 1}（${i + 1}番）</span><select data-g="${i}">${opts(k ? k[i] : null)}</select></div>`).join('')
-      + `<p class="muted" style="margin:4px 0 0">${k ? '設定済み。この表のとおりに注いでください' : '未設定'}</p>`;
+    $('#keyrows').innerHTML = Array.from({ length: 9 }, (_, i) => `<div class="keyrow"><span>${UI.glassName(i + 1)} ・ ${UI.glassName(i + 10)}</span><select data-g="${i}">${opts(k ? k[i] : null)}</select></div>`).join('')
+      + `<p class="muted" style="margin:4px 0 0">${k ? '設定済み。A-n と B-n に、同じワインを注いでください' : '未設定'}</p>`;
   }
   function panelLive() {
     const el = $('#plist'); if (!el || !view) return;

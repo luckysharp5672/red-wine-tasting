@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>参加証の作成</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { padding: 18px; }
+  .cert-wrap { max-width: 1100px; margin: 0 auto; display: grid; gap: 14px; grid-template-columns: minmax(0, 360px) minmax(0, 1fr); align-items: start; }
+  @media (max-width: 760px) { .cert-wrap { grid-template-columns: 1fr; } }
+  .cert-wrap h1 { font-family: var(--serif); font-weight: 600; font-size: 24px; margin: 0; grid-column: 1 / -1; }
+  .cert-wrap .box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+  .cert-wrap input { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; color: var(--ink); font: inherit; }
+  .cert-wrap button { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; color: var(--ink); font: inherit; cursor: pointer; }
+  .cert-wrap button.primary { background: var(--wine); border-color: var(--wine); color: #fff; font-weight: 700; }
+  .cert-wrap button:disabled { opacity: .5; cursor: default; }
+  .plist { display: grid; gap: 6px; max-height: 60vh; overflow: auto; }
+  .plist .row { display: grid; grid-template-columns: 2.2em 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; background: var(--surface-2); }
+  .plist .row.sel { outline: 2px solid var(--wine); }
+  .plist .row .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .plist .row button { padding: 4px 8px; font-size: 13px; }
+  #prev { width: 100%; height: auto; background: #fff; border-radius: 6px; box-shadow: 0 6px 24px rgba(0,0,0,.4); }
+  #msg { font-size: 14px; color: var(--ink-2); min-height: 1.4em; }
+  .note { font-size: 13px; color: var(--muted); line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="cert-wrap">
+  <h1>参加証の作成（進行役用）</h1>
+
+  <div class="box">
+    <label class="note" for="pc">進行役のパスコード</label>
+    <input id="pc" type="password" autocomplete="off">
+    <button class="primary" id="load">参加者の結果を読み込む</button>
+    <div id="msg"></div>
+    <p class="note">A4 縦（2480×3508px・300dpi）の PNG を、参加者ごとに作ります。印刷するときは「拡大縮小なし」（実寸）で A4 に出してください。</p>
+    <button id="zip" disabled>全員ぶんを ZIP でダウンロード</button>
+  </div>
+
+  <div class="box">
+    <div class="plist" id="plist"><p class="note">パスコードを入れて読み込むと、参加者の一覧が出ます。</p></div>
+  </div>
+
+  <div class="box" style="grid-column: 1 / -1; justify-items: center;">
+    <canvas id="prev" width="2480" height="3508" style="max-width: 520px;"></canvas>
+    <div style="display:flex; gap:8px;">
+      <button id="one" disabled>この参加者の PNG をダウンロード</button>
+    </div>
+  </div>
+</div>
+<script src="js/config.js"></script>
+<script src="js/content.js"></script>
+<script src="js/api.js"></script>
+<script src="js/cert.js"></script>
+</body>
+</html>

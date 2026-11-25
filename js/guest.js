@@ -179,7 +179,7 @@ window.Guest = (function () {
     const voteOpts = '<option value="0">― 選ぶ ―</option>' + C.WINES.map((w) => `<option value="${w.no}" ${d.vote === w.no ? 'selected' : ''}>${UI.nn(w.no)} ${UI.esc(w.short)}（${C.GRAPES[w.grape].short}・${C.COUNTRIES[w.country]}）</option>`).join('');
     const glassOpts = '<option value="0">― グラスを選ぶ ―</option>' + Array.from({ length: 18 }, (_, i) => i + 1).map((n) => {
       const busy = taken.indexOf(n) >= 0 && n !== mineGlass;
-      return `<option value="${n}" ${d.glass === n ? 'selected' : ''} ${busy ? 'disabled' : ''}>${n}番（${n <= 9 ? 'SET A' : 'SET B'}）${busy ? '・選ばれています' : ''}</option>`;
+      return `<option value="${n}" ${d.glass === n ? 'selected' : ''} ${busy ? 'disabled' : ''}>${UI.glassName(n)}${busy ? '・選ばれています' : ''}</option>`;
     }).join('');
     const countryOpts = '<option value="">― 選ぶ ―</option>' + Object.keys(C.COUNTRIES).map((k) => `<option value="${k}" ${d.country === k ? 'selected' : ''}>${UI.esc(C.COUNTRIES[k])}</option>`).join('');
     const grapeOpts = '<option value="">― 選ぶ ―</option>' + Object.keys(C.GRAPES).map((k) => `<option value="${k}" ${d.grape === k ? 'selected' : ''}>${UI.esc(C.GRAPES[k].name)}</option>`).join('');
@@ -231,11 +231,11 @@ window.Guest = (function () {
     if (res) {
       const w = UI.wine(res.wine);
       body = `<div style="display:grid;gap:8px;font-size:16px">
-        <div>あなたのグラス：<b>${pick.glass}番</b>（${pick.glass <= 9 ? 'SET A' : 'SET B'}）</div>
+        <div>あなたのグラス：<b>${UI.glassName(pick.glass)}</b></div>
         <div>ワイン：<b>No.${res.wine} ${UI.esc(w.short)}</b>（${UI.esc(C.COUNTRIES[res.countryAns])} ・ ${C.GRAPES[res.grapeAns].short}）</div>
         <div>産地の国：${res.countryOk ? '⭕' : '❌'}　ぶどう品種：${res.grapeOk ? '⭕' : '❌'}　→ <b>${res.pts}点</b></div></div>`;
     } else if (pick) {
-      body = `<p class="lead" style="margin:0">あなたのグラス（${pick.glass}番）は、まだ開けていません。</p>`;
+      body = `<p class="lead" style="margin:0">あなたのグラス（${UI.glassName(pick.glass)}）は、まだ開けていません。</p>`;
     } else {
       body = '<p class="lead" style="margin:0">グラスを選んでいない場合は、投稿時に選べます。</p>';
     }
