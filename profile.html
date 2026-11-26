@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ワインの好み解説書の作成</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body { padding: 18px; }
+  .wrap { max-width: 720px; margin: 0 auto; display: grid; gap: 14px; }
+  .wrap h1 { font-family: var(--serif); font-weight: 600; font-size: 24px; margin: 0; }
+  .box { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: 16px; display: grid; gap: 10px; }
+  .wrap input { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 10px; color: var(--ink); font: inherit; }
+  .wrap button { background: var(--surface-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px; color: var(--ink); font: inherit; cursor: pointer; }
+  .wrap button.primary { background: var(--wine); border-color: var(--wine); color: #fff; font-weight: 700; }
+  .wrap button:disabled { opacity: .5; cursor: default; }
+  .plist { display: grid; gap: 6px; max-height: 60vh; overflow: auto; }
+  .plist .row { display: grid; grid-template-columns: 2.2em 1fr auto; gap: 8px; align-items: center; padding: 6px 8px; border-radius: 8px; background: var(--surface-2); }
+  .plist .row .nm { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #msg { font-size: 14px; color: var(--ink-2); min-height: 1.4em; }
+  .note { font-size: 13px; color: var(--muted); line-height: 1.6; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>ワインの好み解説書（進行役用）</h1>
+  <div class="box">
+    <label class="note" for="pc">進行役のパスコード</label>
+    <input id="pc" type="password" autocomplete="off">
+    <button class="primary" id="load">参加者の結果を読み込む</button>
+    <div id="msg"></div>
+    <p class="note">1人ぶんは「HTML」を押すと、その人の解説書が1つのファイルで保存されます。全員ぶんは「全員ぶんのHTML」を押すと、1人1ページの1つのファイルになります。ブラウザで開き、「印刷」→「PDFに保存」で、A4 の PDF にできます。</p>
+    <button id="all" disabled>全員ぶんのHTML（1人1ページ）</button>
+  </div>
+  <div class="box">
+    <div class="plist" id="plist"><p class="note">パスコードを入れて読み込むと、参加者の一覧が出ます。</p></div>
+  </div>
+</div>
+<script src="js/config.js"></script>
+<script src="js/content.js"></script>
+<script src="js/api.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>
