@@ -380,6 +380,7 @@ textarea.txt { min-height: 70px; resize: vertical; }
 @keyframes flow { from { opacity: .7; } to { opacity: 1; } }
 .hero-glass { position: absolute; right: 110px; top: 40%; width: 240px; }
 .hero-glass .g3d { width: 100%; }
+.g3d-end { width: 210px; margin: 0 auto 18px; }
 .hero-glass .liquid { animation: fillTo 2.6s .3s cubic-bezier(.3,.7,.2,1) both; }
 @keyframes fillTo { from { transform: translateY(54px); } to { transform: translateY(calc((1 - var(--fill)) * 54px)); } }
 .ending .wglass-wrap { margin: 0 auto 18px; }
