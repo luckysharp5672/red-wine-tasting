@@ -1,5 +1,5 @@
 // ============================================================
-// 参加証（A4縦・PNG）の描画と、全員ぶんのZIP
+// 修了証（A4縦・PNG）の描画と、全員ぶんのZIP
 //   データは進行役のパスコードで GAS から取る（host.certs）。参加者の画面には出ない。
 //   描画は Canvas（2480×3508px＝A4縦 300dpi）。背景は紙のような生成画像（ぶどうのつると金の枠）。
 // ============================================================
@@ -94,12 +94,12 @@
     ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath(); ctx.fill(); ctx.stroke();
   }
 
-  // 参加者1人ぶんの参加証を描く
+  // 参加者1人ぶんの修了証を描く
   function draw(ctx, p) {
     background(ctx);
     glassIcon(ctx, W / 2, 470, 1.25);
     text(ctx, 'SVU', W / 2, 700, 60, { fam: SANS, color: COL.gold, spacing: 18 });
-    text(ctx, '参加証', W / 2, 900, 230, { weight: 600, color: COL.ink });
+    text(ctx, '修了証', W / 2, 900, 230, { weight: 600, color: COL.ink });
     text(ctx, 'WINE TASTING CERTIFICATE', W / 2, 990, 54, { color: COL.gold, spacing: 14 });
     text(ctx, EVENT_NAME, W / 2, 1130, 96, { weight: 600 });
     text(ctx, EVENT_SUB, W / 2, 1230, 52, { color: COL.muted });
@@ -154,7 +154,7 @@
     // 結び
     text(ctx, EVENT_DATE, W / 2, 3080, 50, { color: COL.muted });
     text(ctx, 'SVU', W / 2, 3150, 54, { fam: SANS, color: COL.gold, spacing: 16 });
-    text(ctx, `参加証 No. 1126-${pad2(p.idx)}`, W / 2, 3240, 36, { fam: SANS, color: COL.muted });
+    text(ctx, `修了証 No. 1126-${pad2(p.idx)}`, W / 2, 3240, 36, { fam: SANS, color: COL.muted });
   }
 
   function render(p) {
@@ -172,7 +172,7 @@
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(() => URL.revokeObjectURL(a.href), 4000);
   }
-  function fileName(p) { return `参加証_${pad2(p.idx)}_${safeName(p.name)}.png`; }
+  function fileName(p) { return `修了証_${pad2(p.idx)}_${safeName(p.name)}.png`; }
 
   // ---------- ZIP（無圧縮・UTF-8ファイル名） ----------
   const CRC_TABLE = (() => {
@@ -251,7 +251,7 @@
       const b = await blobOf(render(people[i]));
       files.push({ name: fileName(people[i]), data: new Uint8Array(await b.arrayBuffer()) });
     }
-    download(makeZip(files), `参加証_SVU1126_${files.length}名.zip`);
+    download(makeZip(files), `修了証_${files.length}名.zip`);
     msg(`${files.length}名ぶんの ZIP を作りました`);
   }
 
