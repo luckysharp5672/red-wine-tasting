@@ -136,7 +136,7 @@ window.UI = (function () {
         <div class="card"><b>今夜はスマホが相棒。</b> 診断・記録・クイズ・投票は、すべて最初に読んだQRのページから。答えた結果はその場で画面に映ります。</div>` };
     },
     bring() {
-      return { html: `<div class="cols cols-3 bring">${C.BRINGS.map((b) => `<div class="card bring-card">
+      return { html: `<div class="cols cols-${C.BRINGS.length >= 4 ? 4 : 3} bring">${C.BRINGS.map((b) => `<div class="card bring-card">
         <div class="kicker" style="font-size:16px">持ち込み ・ ${esc(b.who)}</div>
         <h3 style="font-size:27px;margin:8px 0 4px;line-height:1.3">${esc(b.name)}</h3>
         <div class="muted" style="margin-bottom:12px">${esc(b.maker)}</div>
