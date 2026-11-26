@@ -6,7 +6,7 @@
 (function () {
   'use strict';
   const C = window.CONTENT;
-  let people = [], meta = null;
+  let people = [], meta = null, pass = '';
   const $ = (s) => document.querySelector(s);
   const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
   const pad2 = (n) => String(n).padStart(2, '0');
@@ -134,7 +134,7 @@
   function msg(t, bad) { const el = $('#msg'); el.textContent = t; el.style.color = bad ? '#e0735f' : ''; }
 
   async function load() {
-    const pass = $('#pc').value.trim();
+    pass = $('#pc').value.trim();
     if (!pass) { msg('パスコードを入れてください', true); return; }
     msg('読み込んでいます…');
     const r = await window.Api.call({ action: 'host.certs', hostKey: pass });
@@ -147,7 +147,97 @@
     msg(`${people.length}人ぶんを読み込みました`);
   }
 
+  // ---------- ZIP（無圧縮・UTF-8ファイル名。修了証と同じ方式） ----------
+  const CRC_TABLE = (() => {
+    const t = new Uint32Array(256);
+    for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+    return t;
+  })();
+  function crc32(u8) {
+    let c = 0xFFFFFFFF;
+    for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+    return (c ^ 0xFFFFFFFF) >>> 0;
+  }
+  function makeZip(files) {
+    const enc = new TextEncoder(), parts = [], central = [];
+    let offset = 0;
+    files.forEach((f) => {
+      const nb = enc.encode(f.name), crc = crc32(f.data), size = f.data.length;
+      const lh = new DataView(new ArrayBuffer(30));
+      lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true);
+      lh.setUint16(8, 0, true); lh.setUint16(10, 0, true); lh.setUint16(12, 0x21, true);
+      lh.setUint32(14, crc, true); lh.setUint32(18, size, true); lh.setUint32(22, size, true);
+      lh.setUint16(26, nb.length, true); lh.setUint16(28, 0, true);
+      parts.push(new Uint8Array(lh.buffer), nb, f.data);
+      const ch = new DataView(new ArrayBuffer(46));
+      ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true);
+      ch.setUint16(10, 0, true); ch.setUint16(12, 0, true); ch.setUint16(14, 0x21, true);
+      ch.setUint32(16, crc, true); ch.setUint32(20, size, true); ch.setUint32(24, size, true);
+      ch.setUint16(28, nb.length, true); ch.setUint16(30, 0, true); ch.setUint16(32, 0, true);
+      ch.setUint16(34, 0, true); ch.setUint16(36, 0, true); ch.setUint32(38, 0, true); ch.setUint32(42, offset, true);
+      central.push(new Uint8Array(ch.buffer), nb);
+      offset += 30 + nb.length + size;
+    });
+    const cdSize = central.reduce((a, b) => a + b.length, 0);
+    const end = new DataView(new ArrayBuffer(22));
+    end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+    end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+    return new Blob([...parts, ...central, new Uint8Array(end.buffer)], { type: 'application/zip' });
+  }
+
+  // 1人ぶんの解説書を PNG にする（html2canvas で A4 の1ページを描く）
+  async function pngOf(p, idx) {
+    if (!window.html2canvas) throw new Error('画像の部品（html2canvas）を読み込めませんでした');
+    const wrap = document.createElement('div');
+    wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:186mm;background:#fbf7f0;';
+    wrap.innerHTML = `<style>${CSS}</style>${page(p, idx)}`;
+    document.body.appendChild(wrap);
+    try {
+      const canvas = await window.html2canvas(wrap.querySelector('.page'), { scale: 2, backgroundColor: '#fbf7f0' });
+      const blob = await new Promise((res) => canvas.toBlob(res, 'image/png'));
+      return new Uint8Array(await blob.arrayBuffer());
+    } finally {
+      wrap.remove();
+    }
+  }
+
+  async function zipImages() {
+    const files = [];
+    for (let i = 0; i < people.length; i++) {
+      msg(`画像を作っています…（${i + 1} / ${people.length}）`);
+      files.push({ name: `好み解説書_${pad2(i + 1)}_${safeName(people[i].name)}.png`, data: await pngOf(people[i], i + 1) });
+    }
+    download(makeZip(files), `好み解説書_画像_${files.length}名.zip`);
+    msg(`${files.length}名ぶんの画像（PNG）をZIPにしました`);
+  }
+
+  // ---------- アンケート結果（Excel） ----------
+  async function surveyExcel() {
+    if (!pass) { msg('先にパスコードで読み込んでください', true); return; }
+    const r = await window.Api.call({ action: 'host.surveys', hostKey: pass });
+    if (!r.ok) { msg(r.error || '読み込めませんでした', true); return; }
+    if (!r.surveys.length) { msg('アンケートの回答はまだありません'); return; }
+    if (!window.XLSX) { msg('Excel の部品（SheetJS）を読み込めませんでした', true); return; }
+    const rows = r.surveys.map((s, i) => ({
+      'No.': i + 1,
+      '回答日時': new Date(s.ts).toLocaleString('ja-JP'),
+      '満足度（1〜5）': s.sat,
+      '印象に残ったワイン': s.wine,
+      '良かった企画': s.good,
+      'やってみたいこと': s.wish,
+      '感想・改善してほしい点': s.comment
+    }));
+    const ws = window.XLSX.utils.json_to_sheet(rows);
+    ws['!cols'] = [{ wch: 5 }, { wch: 20 }, { wch: 12 }, { wch: 16 }, { wch: 40 }, { wch: 40 }, { wch: 40 }];
+    const wb = window.XLSX.utils.book_new();
+    window.XLSX.utils.book_append_sheet(wb, ws, 'アンケート');
+    window.XLSX.writeFile(wb, `アンケート結果_${rows.length}件.xlsx`);
+    msg(`アンケート ${rows.length} 件をExcelで保存しました`);
+  }
+
   document.addEventListener('DOMContentLoaded', () => {
+    $('#zip').addEventListener('click', () => { if (people.length) zipImages(); });
+    $('#survey').addEventListener('click', surveyExcel);
     $('#load').addEventListener('click', load);
     $('#pc').addEventListener('keydown', (e) => { if (e.key === 'Enter') load(); });
     $('#plist').addEventListener('click', (e) => {
