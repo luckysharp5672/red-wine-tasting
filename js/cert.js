@@ -115,7 +115,10 @@
     const bx = 300, by = 1760, bw = W - 600, bh = 1160;
     panel(ctx, bx, by, bw, bh);
     const LX = bx + 130, VX = bx + 130;
-    const row = (i) => by + 56 + i * 275;
+    const row = (i) => by + 50 + i * 222;
+    const mtop = Array.isArray(p.matchTop) ? p.matchTop : [];
+    const matchVal = mtop.length ? mtop.map((x) => `${x.name} ${x.score}%`).join('　') : '比べられるデータが足りません';
+    const matchSub = mtop.length ? '好みの近さ（共通して記録したワインの★の差から算出）' : '3本以上記録すると、ここに出ます';
 
     const diagT = p.diag ? C.DIAG.types[p.diag].full : '未診断';
     const diagSub = p.diagHit === null ? '' : (p.diagHit ? '試飲の結果とも一致しました' : '試飲の結果は、少し違う意外な発見');
@@ -134,7 +137,8 @@
       ['好み診断', diagT, diagSub],
       ['一番気に入ったワイン', fav, ''],
       ['知識クイズ', `${q.score} / ${q.total} 点`, quizSub],
-      ['銘柄当て（Blind Challenge）', blindVal, blindSub]
+      ['銘柄当て（Blind Challenge）', blindVal, blindSub],
+      ['相性の良い人（トップ3）', matchVal, matchSub]
     ];
     items.forEach((it, i) => {
       const y = row(i);
@@ -143,7 +147,7 @@
       if (it[2]) text(ctx, it[2], VX, y + 194, 42, { color: COL.muted, align: 'left', maxW: bw - 260, fam: SANS });
       if (i < items.length - 1) {
         ctx.strokeStyle = 'rgba(168,132,58,0.45)'; ctx.lineWidth = 2;
-        ctx.beginPath(); ctx.moveTo(bx + 100, y + 245); ctx.lineTo(bx + bw - 100, y + 245); ctx.stroke();
+        ctx.beginPath(); ctx.moveTo(bx + 100, y + 210); ctx.lineTo(bx + bw - 100, y + 210); ctx.stroke();
       }
     });
 
