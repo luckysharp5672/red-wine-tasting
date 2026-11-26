@@ -129,7 +129,7 @@ body.host { overflow: hidden; }
 
 .cover { justify-content: center; align-items: flex-start; padding-left: 120px !important; }
 .cover .en1 { font-family: var(--serif); letter-spacing: .3em; color: var(--accent); font-size: 26px; }
-.cover h1 { font-family: var(--serif); font-size: 76px; margin: 18px 0 10px; font-weight: 600; line-height: 1.25; }
+.cover h1 { font-family: var(--serif); font-size: 68px; margin: 18px 0 10px; font-weight: 600; line-height: 1.25; }
 .cover .sub { font-size: 28px; color: var(--ink-2); }
 .cover .series { margin-top: 40px; color: var(--muted); font-size: 20px; }
 .cover .rule { width: 160px; height: 2px; background: var(--wine); margin: 22px 0; }
