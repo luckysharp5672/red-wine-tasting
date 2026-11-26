@@ -378,7 +378,8 @@ textarea.txt { min-height: 70px; resize: vertical; }
 .wglass-wrap .stream { position: absolute; left: 50%; width: 4px; margin-left: -2px; top: -18%; bottom: 81.8%; border-radius: 2px; background: linear-gradient(#B22234, #7B1E2B); transform-origin: 50% 0; animation: pour 2.2s ease-out .2s both, flow 1.8s ease-in-out 2.4s infinite alternate; }
 @keyframes pour { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes flow { from { opacity: .7; } to { opacity: 1; } }
-.hero-glass { position: absolute; right: 110px; top: 56%; width: 150px; }
+.hero-glass { position: absolute; right: 110px; top: 40%; width: 240px; }
+.hero-glass .g3d { width: 100%; }
 .hero-glass .liquid { animation: fillTo 2.6s .3s cubic-bezier(.3,.7,.2,1) both; }
 @keyframes fillTo { from { transform: translateY(54px); } to { transform: translateY(calc((1 - var(--fill)) * 54px)); } }
 .ending .wglass-wrap { margin: 0 auto 18px; }

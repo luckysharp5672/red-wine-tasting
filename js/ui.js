@@ -112,7 +112,7 @@ window.UI = (function () {
   const R = {
     cover() {
       const E = C.EVENT;
-      return { cls: 'cover', html: `<div class="en1">${E.en}</div><h1>${esc(E.title)}</h1><div class="rule"></div><div class="sub">${esc(E.sub)}</div><div class="series">${esc(E.series)}</div><div class="hero-glass">${glass(0.72, 'mid', 'gc-cover', true)}</div>` };
+      return { cls: 'cover', html: `<div class="en1">${E.en}</div><h1>${esc(E.title)}</h1><div class="rule"></div><div class="sub">${esc(E.sub)}</div><div class="series">${esc(E.series)}</div><div class="hero-glass"><div class="g3d" data-fill="0.72">${glass(0.72, 'mid', 'gc-cover', true)}</div></div>` };
     },
     join() {
       const u = publicUrl();
@@ -247,7 +247,7 @@ window.UI = (function () {
         <div class="card"><b>PART 2　銘柄当て</b> グラス（A-1〜B-9）を1つ選び、産地の国とぶどう品種を答える<br><span class="muted">1人1グラス（先着）。締め切るまでは出し直せます</span></div></div></div>` };
     },
     reveal() {
-      return { html: `<div class="reveal-grid" data-live="glasses">${Array.from({ length: 18 }, (_, i) => i + 1).map((n) => `<div class="rcard" data-g="${n}"><div class="in"><div class="face front"><div class="gn">${n}</div><div class="muted">？？？</div></div><div class="face back"></div></div></div>`).join('')}</div>
+      return { html: `<div class="reveal-grid" data-live="glasses">${Array.from({ length: 18 }, (_, i) => i + 1).map((n) => `<div class="rcard" data-g="${n}"><div class="in"><div class="face front"><div class="gn">${glassName(n)}</div><div class="muted">？？？</div></div><div class="face back"></div></div></div>`).join('')}</div>
         <div data-live="winner" style="flex:1;display:grid;place-items:center"></div>` };
     },
     awards() {

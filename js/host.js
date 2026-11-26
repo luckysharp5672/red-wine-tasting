@@ -83,6 +83,9 @@ window.Host = (function () {
     corner.className = 'corner-qr';
     corner.innerHTML = `${UI.qr(UI.publicUrl())}<span>スマホで参加<br><small>QRを読んで<br>名前を入れる</small></span>`;
     stage.appendChild(corner);
+    // 表紙のワインは 3D（Three.js）。読めない環境では 2D のグラスのまま
+    const g3 = stage.querySelector('.g3d');
+    if (g3 && window.Glass3D) window.Glass3D.mount(g3, Number(g3.dataset.fill) || 0.72);
     $('#notes').innerHTML = `<b>${UI.esc(cur().title)}</b><br>${UI.esc(cur().note || '（ノートなし）')}`;
     live(); bar();
   }
@@ -101,7 +104,7 @@ window.Host = (function () {
       if (!view.counts.submit) return { label: '投稿の受付を始める', patch: { submitOpen: true }, needKey: true };
     }
     if (s.kind === 'reveal') {
-      if (st.blindReveal < 18) return { label: `グラス ${st.blindReveal + 1} を開ける`, patch: { blindReveal: st.blindReveal + 1 }, needKey: true };
+      if (st.blindReveal < 9) return { label: '全カードの正解を一斉に発表', patch: { blindReveal: 9 }, needKey: true };
       if (!st.blindWinner) return { label: '最高得点者を発表', patch: { blindWinner: true } };
     }
     if (s.kind === 'awards') {
@@ -253,14 +256,15 @@ window.Host = (function () {
       card.querySelector('.back').classList.add(UI.gcls(w.grape));
       if (!card.classList.contains('open')) requestAnimationFrame(() => card.classList.add('open'));
     });
-    root.querySelectorAll('.rcard').forEach((c) => { if (Number(c.dataset.g) > n) c.classList.remove('open'); });
+    const shown = new Set(v.blind.glasses.map((g) => String(g.glass)));
+    root.querySelectorAll('.rcard').forEach((c) => { if (!shown.has(c.dataset.g)) c.classList.remove('open'); });
     const el = root.querySelector('[data-live="winner"]');
     if (!v.blind.keySet) { UI.setHTML(el, '<p class="status-closed" style="font-size:22px">銘柄当ての正解が未設定です（管理 K から設定）</p>'); return; }
     if (v.blind.ranking) {
       const r = v.blind.ranking, top = r.filter((x) => x.rank === 1);
       UI.setHTML(el, top.length ? `<div class="winner"><span class="crown">👑</span><div><div class="kicker" style="font-size:18px">銘柄当て 最高得点</div><div class="who">${top.map((x) => UI.esc(x.name)).join('、')}</div></div><div class="pts">${top[0].score} / 6 点</div></div>
         <p class="muted" style="text-align:center;margin:8px 0 0;font-size:18px">${r.filter((x) => x.rank > 1).slice(0, 5).map((x) => `${x.rank}位 ${UI.esc(x.name)}（${x.score}点）`).join('　')}</p>` : '<p class="muted">投稿がありません</p>');
-    } else UI.setHTML(el, n ? `<p class="muted" style="font-size:20px">${n < 18 ? '→キーで次のグラス' : '→キーで最高得点者を発表'}</p>` : '<p class="muted" style="font-size:22px">→キーでグラス1から開けます</p>');
+    } else UI.setHTML(el, n ? `<p class="muted" style="font-size:20px">${n < 9 ? '→キーで全カードを一斉に発表' : '→キーで最高得点者を発表'}</p>` : '<p class="muted" style="font-size:22px">→キーで全カードの正解を一斉に発表します</p>');
   }
 
   function voteHTML(v) {

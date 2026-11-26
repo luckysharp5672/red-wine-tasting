@@ -192,7 +192,7 @@ window.CONTENT = (function () {
     { id: 'blind', kind: 'blind', title: 'BLIND CHALLENGE', step: '05', note: 'ここからがメインイベント。照明を少し落として、ゲーム番組のテンションで。' },
     { id: 'blindrules', kind: 'blindrules', title: '銘柄当てのルール', step: '05', reader: true, note: '18本のグラスを SET A（A-1〜A-9）と SET B（B-1〜B-9）に分けて置く。A-n と B-n（同じ番号）は同じワイン。記録タブを見返しながら、産地の国と品種を予想してOK。' },
     { id: 'submit', kind: 'submit', title: '投稿タイム', step: '05', note: '→キーで投稿受付を開始、もう一度→で締め切り。締め切るまでは何度でも出し直せます。' },
-    { id: 'reveal', kind: 'reveal', title: '正解発表', step: '06', note: '→キーを押すたびにグラスを1本ずつ開ける。誰がそのグラスを選び、何点取ったかが出ます。18本開けたら、もう一度→で最高得点者。' },
+    { id: 'reveal', kind: 'reveal', title: '正解発表', step: '06', note: '→キーで全カードの正解を一斉に発表。A-n と B-n（同じワイン）が並んで開き、誰がそのグラスを選び、何点取ったかが出ます。もう一度→で最高得点者。' },
     { id: 'awards', kind: 'awards', title: '表彰', step: '06', note: '→キーで、人気投票（下位から）→ クイズ王の順に発表。' },
     { id: 'ending', kind: 'ending', title: 'エンディング', reader: true, note: 'ご参加ありがとうございました。乾杯！ スマホの資料と自分の記録は、このあとも見返せます。' }
   ];
